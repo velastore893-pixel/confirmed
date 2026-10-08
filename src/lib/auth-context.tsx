@@ -1,7 +1,16 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 
-type AuthUser = {
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from "react";
+
+export type AuthUser = {
   id: string;
   email: string;
   firstName: string;
@@ -12,10 +21,14 @@ type AuthUser = {
   employeeId?: string;
 };
 
+type LoginResult =
+  | { success: true; user: AuthUser }
+  | { success: false; error?: string };
+
 type AuthContextType = {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -35,56 +48,90 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = useCallback(async (): Promise<AuthUser | null> => {
     try {
-      const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
       if (res.ok) {
         const data = await res.json();
         return data.user || null;
       }
+
       return null;
     } catch {
       return null;
     }
   }, []);
 
-  // Initial auth check on mount
   useEffect(() => {
     let cancelled = false;
+
     (async () => {
       const u = await fetchUser();
+
       if (!cancelled) {
         setUser(u);
         setLoading(false);
         initialized.current = true;
       }
     })();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchUser]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok && data.user) {
-        setUser(data.user);
-        setLoading(false);
-        initialized.current = true;
-        return { success: true };
+  const login = useCallback(
+    async (email: string, password: string): Promise<LoginResult> => {
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+          }),
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.user) {
+          const authenticatedUser = data.user as AuthUser;
+
+          setUser(authenticatedUser);
+          setLoading(false);
+          initialized.current = true;
+
+          return {
+            success: true,
+            user: authenticatedUser,
+          };
+        }
+
+        return {
+          success: false,
+          error: data.error || "Login failed",
+        };
+      } catch {
+        return {
+          success: false,
+          error: "Network error",
+        };
       }
-      return { success: false, error: data.error || "Login failed" };
-    } catch {
-      return { success: false, error: "Network error" };
-    }
-  }, []);
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
     } catch {}
+
     setUser(null);
   }, []);
 
@@ -96,7 +143,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+        refresh,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
