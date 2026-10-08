@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
       companyName,
     } = body;
 
-    // Required fields
     if (
       !firstName?.trim() ||
       !lastName?.trim() ||
@@ -46,7 +45,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Normalize + validate email
     const cleanEmail = email.toLowerCase().trim();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
@@ -58,7 +56,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate password
     const pwCheck = validatePassword(password);
 
     if (!pwCheck.valid) {
@@ -80,7 +77,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Email must be unique
     const [existing] = await db
       .select({
         id: users.id,
@@ -98,7 +94,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create CLIENT account as PENDING
     const passwordHash = await hashPassword(password);
 
     const [user] = await db
@@ -109,25 +104,18 @@ export async function POST(req: NextRequest) {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone?.trim() || null,
-
         role: "client",
-
+        approvalStatus: "pending",
         locale: "ar",
-
-        // IMPORTANT:
-        // New clients require Admin approval.
         isActive: false,
       })
       .returning();
 
-    // Create client profile
     await db.insert(clients).values({
       userId: user.id,
-
       companyName:
         companyName?.trim() ||
         `${firstName.trim()} ${lastName.trim()}`,
-
       defaultPricePerOrder: "10.00",
     });
 
