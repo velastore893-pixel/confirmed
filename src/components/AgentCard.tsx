@@ -21,23 +21,72 @@ const AVATAR_COLORS = [
   "linear-gradient(135deg, #ea580c, #d97706)",
 ];
 
-export default function AgentCard({ agent, index, labels }: { agent: AgentData; index: number; labels: Record<string, string> }) {
-  const initials = agent.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+export default function AgentCard({
+  agent,
+  index,
+  labels,
+}: {
+  agent: AgentData;
+  index: number;
+  labels: Record<string, string>;
+}) {
+  const initials = agent.name
+    .split(" ")
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+
   const bg = AVATAR_COLORS[index % AVATAR_COLORS.length];
-  const confRate = agent.orders > 0 ? ((agent.confirmed + agent.delivered) / agent.orders * 100).toFixed(0) : "0";
-  const delRate = agent.orders > 0 ? (agent.delivered / agent.orders * 100).toFixed(0) : "0";
+
+  const confRate =
+    agent.orders > 0
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            ((agent.confirmed + agent.delivered) / agent.orders) * 100,
+          ),
+        )
+      : 0;
+
+  const delRate =
+    agent.orders > 0
+      ? Math.min(100, Math.max(0, (agent.delivered / agent.orders) * 100))
+      : 0;
+
+  const displayConfRate = Math.round(confRate);
+  const displayDelRate = Math.round(delRate);
 
   return (
-    <div className="agent-card">
+    <article className="agent-card group">
       <div className="agent-header">
-        <div className="agent-avatar" style={{ background: bg }}>{initials}</div>
-        <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[13px] text-slate-900 truncate">{agent.name}</div>
-          {agent.email && <div className="text-[11px] text-slate-400 truncate">{agent.email}</div>}
+        <div
+          className="agent-avatar shadow-sm"
+          style={{ background: bg }}
+          aria-hidden="true"
+        >
+          {initials || "A"}
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span className="text-[11px] text-emerald-600 font-medium">{labels.active || "Active"}</span>
+
+        <div className="flex-1 min-w-0">
+          <div className="font-extrabold text-[13px] text-slate-900 truncate">
+            {agent.name}
+          </div>
+
+          {agent.email && (
+            <div className="text-[11px] text-slate-400 truncate mt-0.5">
+              {agent.email}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-1">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.10)]" />
+          <span className="text-[10px] text-emerald-700 font-bold">
+            {labels.active || "Active"}
+          </span>
         </div>
       </div>
 
@@ -46,49 +95,70 @@ export default function AgentCard({ agent, index, labels }: { agent: AgentData; 
           <div className="stat-value text-blue-600">{agent.orders}</div>
           <div className="stat-label">{labels.assigned || "Assigned"}</div>
         </div>
+
         <div className="stat-box">
           <div className="stat-value text-emerald-600">{agent.confirmed}</div>
           <div className="stat-label">{labels.confirmed || "Confirmed"}</div>
         </div>
+
         <div className="stat-box">
           <div className="stat-value text-violet-600">{agent.delivered}</div>
           <div className="stat-label">{labels.delivered || "Delivered"}</div>
         </div>
+
         <div className="stat-box">
           <div className="stat-value text-slate-600">{agent.noAnswer}</div>
           <div className="stat-label">{labels.noAnswer || "No Answer"}</div>
         </div>
+
         <div className="stat-box">
           <div className="stat-value text-amber-600">{agent.pending}</div>
           <div className="stat-label">{labels.pending || "Pending"}</div>
         </div>
+
         <div className="stat-box">
-          <div className="stat-value text-red-500">{agent.returned}</div>
+          <div className="stat-value text-rose-500">{agent.returned}</div>
           <div className="stat-label">{labels.returns || "Returns"}</div>
         </div>
       </div>
 
-      {/* Rate bars */}
-      <div className="px-4 py-3 bg-slate-50/50 space-y-2">
+      <div className="px-4 py-3.5 bg-slate-50/60 border-t border-slate-100 space-y-3">
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-medium text-slate-500">{labels.confirmRate || "Confirmation"}</span>
-            <span className="text-[10px] font-bold text-emerald-600">{confRate}%</span>
+          <div className="flex items-center justify-between gap-3 mb-1.5">
+            <span className="text-[10px] font-semibold text-slate-500">
+              {labels.confirmRate || "Confirmation"}
+            </span>
+            <span className="text-[10px] font-extrabold text-emerald-600">
+              {displayConfRate}%
+            </span>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div className="bg-emerald-500 h-1.5 rounded-full transition-all" style={{ width: `${confRate}%` }} />
+
+          <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+            <div
+              className="bg-emerald-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${displayConfRate}%` }}
+            />
           </div>
         </div>
+
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-medium text-slate-500">{labels.deliveryRate || "Delivery"}</span>
-            <span className="text-[10px] font-bold text-blue-600">{delRate}%</span>
+          <div className="flex items-center justify-between gap-3 mb-1.5">
+            <span className="text-[10px] font-semibold text-slate-500">
+              {labels.deliveryRate || "Delivery"}
+            </span>
+            <span className="text-[10px] font-extrabold text-blue-600">
+              {displayDelRate}%
+            </span>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${delRate}%` }} />
+
+          <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+            <div
+              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${displayDelRate}%` }}
+            />
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
