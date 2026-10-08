@@ -1154,4 +1154,1175 @@ html[dir="ltr"] .dashboard-section {
   }
 }
 
+/* =====================================================================
+   CODFlow 2026 — Premium Sidebar Dashboard
+   Final override for the approved visual direction.
+   Append this block at the VERY END of src/app/globals.css
+   ===================================================================== */
+
+:root {
+  --cf-sidebar: 244px;
+  --cf-topbar: 72px;
+  --cf-bg: #f5f7fb;
+  --cf-surface: #ffffff;
+  --cf-line: #e8ecf3;
+  --cf-text: #111827;
+  --cf-muted: #7b879a;
+  --cf-primary: #635bff;
+  --cf-primary-soft: #f0efff;
+  --cf-radius-xl: 24px;
+  --cf-shadow: 0 12px 35px rgba(15, 23, 42, .055);
+}
+
+body {
+  background:
+    radial-gradient(circle at 82% 0%, rgba(99, 91, 255, .055), transparent 27rem),
+    #f5f7fb;
+}
+
+.codflow-app-shell {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.codflow-sidebar {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: var(--cf-sidebar);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px 14px;
+  background: rgba(255,255,255,.97);
+  border-inline-end: 1px solid var(--cf-line);
+  box-shadow: 8px 0 30px rgba(15,23,42,.025);
+}
+
+.codflow-sidebar-brand {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px 14px;
+  border-bottom: 1px solid #f0f2f6;
+}
+
+.codflow-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--cf-text);
+}
+
+.codflow-brand-mark {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(135deg,#625cf6,#8b5cf6);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  box-shadow: 0 10px 22px rgba(99,91,255,.22);
+}
+
+.codflow-brand-copy b {
+  display: block;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+}
+
+html[dir="rtl"] .codflow-brand-copy b { letter-spacing: 0; }
+
+.codflow-brand-copy small {
+  display: block;
+  margin-top: 3px;
+  color: #9aa4b4;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.codflow-sidebar-close {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  color: #64748b;
+}
+
+.codflow-sidebar-label {
+  padding: 18px 12px 9px;
+  color: #a0a8b7;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+html[dir="rtl"] .codflow-sidebar-label { letter-spacing: 0; }
+
+.codflow-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  padding: 0 2px 12px;
+}
+
+.codflow-nav-link {
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 11px;
+  border-radius: 12px;
+  color: #687386;
+  font-size: 12px;
+  font-weight: 750;
+  transition: .18s ease;
+}
+
+.codflow-nav-link:hover {
+  background: #f7f8fc;
+  color: #222b3c;
+}
+
+.codflow-nav-link.is-active {
+  color: #5650df;
+  background: linear-gradient(135deg,#f0efff,#f7f6ff);
+  box-shadow: inset 0 0 0 1px #e2e0ff;
+}
+
+.codflow-nav-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: currentColor;
+}
+
+.codflow-nav-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.codflow-nav-badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.codflow-sidebar-bottom {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #f0f2f6;
+}
+
+.codflow-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #fafbfe;
+}
+
+.codflow-sidebar-profile b {
+  font-size: 11px;
+  color: #273043;
+}
+
+.codflow-sidebar-profile small {
+  margin-top: 2px;
+  color: #9aa4b4;
+  font-size: 9px;
+}
+
+.codflow-avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: linear-gradient(135deg,#665ff2,#8b5cf6);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(99,91,255,.18);
+}
+
+.codflow-main-shell {
+  min-height: 100vh;
+  margin-inline-start: var(--cf-sidebar);
+}
+
+.codflow-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--cf-topbar);
+  background: rgba(255,255,255,.88);
+  border-bottom: 1px solid rgba(232,236,243,.95);
+  backdrop-filter: blur(18px) saturate(150%);
+}
+
+.codflow-topbar-inner {
+  width: 100%;
+  height: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.codflow-page-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9aa4b4;
+  font-size: 11px;
+}
+
+.codflow-page-crumb b {
+  color: #222b3c;
+  font-weight: 800;
+}
+
+.codflow-mobile-menu-button {
+  display: none;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  color: #556174;
+  background: #f7f8fb;
+  border: 1px solid #eef1f5;
+}
+
+.codflow-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.codflow-lang-switch {
+  display: flex;
+  padding: 3px;
+  border-radius: 11px;
+  background: #f4f6fa;
+}
+
+.codflow-lang-switch button {
+  min-width: 31px;
+  height: 29px;
+  padding: 0 7px;
+  border-radius: 8px;
+  color: #8a94a6;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.codflow-lang-switch button.is-active {
+  background: #fff;
+  color: #2e3748;
+  box-shadow: 0 2px 8px rgba(15,23,42,.07);
+}
+
+.codflow-topbar-icon {
+  position: relative;
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #64748b;
+  background: #fff;
+  border: 1px solid #edf0f4;
+}
+
+.codflow-topbar-icon > span {
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -4px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  border: 2px solid #fff;
+}
+
+.codflow-user-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+}
+
+.codflow-user-button:hover {
+  background: #f8f9fc;
+  border-color: #edf0f4;
+}
+
+.codflow-user-copy {
+  min-width: 70px;
+  text-align: start;
+}
+
+.codflow-user-copy b {
+  display: block;
+  color: #263043;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.codflow-user-copy small {
+  display: block;
+  margin-top: 2px;
+  color: #9aa4b4;
+  font-size: 8px;
+  text-transform: capitalize;
+}
+
+.codflow-user-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  inset-inline-end: 0;
+  width: 250px;
+  padding: 8px;
+  border-radius: 17px;
+  background: #fff;
+  border: 1px solid #e7ebf2;
+  box-shadow: 0 22px 60px rgba(15,23,42,.16);
+}
+
+.codflow-user-menu-head {
+  padding: 10px 10px 12px;
+  border-bottom: 1px solid #eff2f6;
+}
+
+.codflow-user-menu-head b {
+  display: block;
+  color: #1f2937;
+  font-size: 12px;
+}
+
+.codflow-user-menu-head span {
+  display: block;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.codflow-user-menu a,
+.codflow-user-menu button {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #596579;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.codflow-user-menu a:hover,
+.codflow-user-menu button:hover { background: #f7f8fb; }
+
+.codflow-main-content {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 26px 28px 48px;
+}
+
+.codflow-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.codflow-dashboard-hero {
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.codflow-eyebrow {
+  display: inline-block;
+  margin-bottom: 5px;
+  color: #746ff1;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+html[dir="rtl"] .codflow-eyebrow { letter-spacing: 0; }
+
+.codflow-dashboard-hero h1 {
+  color: #101827;
+  font-size: clamp(25px,2.4vw,34px);
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -.035em;
+}
+
+html[dir="rtl"] .codflow-dashboard-hero h1 { letter-spacing: 0; }
+
+.codflow-dashboard-hero p {
+  max-width: 720px;
+  margin-top: 8px;
+  color: #7d899b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.codflow-live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  color: #6e7a8d;
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: 0 7px 20px rgba(15,23,42,.035);
+}
+
+.codflow-live-chip > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 0 4px #d1fae5;
+}
+
+.codflow-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 17px;
+  background: rgba(255,255,255,.93);
+  border: 1px solid #e9edf3;
+  box-shadow: 0 8px 24px rgba(15,23,42,.035);
+}
+
+.codflow-periods {
+  display: grid;
+  grid-template-columns: repeat(6,minmax(82px,1fr));
+  gap: 5px;
+  width: min(100%,800px);
+}
+
+.codflow-periods button {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: #7c8798;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.codflow-periods button:hover { background: #f7f8fb; }
+
+.codflow-periods button.is-active {
+  background: #eeedff;
+  color: #5852dc;
+  box-shadow: inset 0 0 0 1px #dddbff;
+}
+
+.codflow-custom-dates {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.codflow-custom-dates input {
+  height: 34px;
+  padding: 0 9px;
+  border-radius: 9px;
+  border: 1px solid #e2e7ee;
+  background: #fff;
+  color: #475569;
+  font-size: 10px;
+}
+
+.codflow-custom-dates button {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 9px;
+  background: #625cf6;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.codflow-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6,minmax(0,1fr));
+  gap: 12px;
+}
+
+.codflow-kpi {
+  min-width: 0;
+  min-height: 138px;
+  position: relative;
+  overflow: hidden;
+  padding: 17px;
+  border-radius: 21px;
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  box-shadow: 0 9px 26px rgba(15,23,42,.035);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.codflow-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15,23,42,.075);
+}
+
+.codflow-kpi::after {
+  content: "";
+  position: absolute;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  inset-inline-end: -28px;
+  top: -32px;
+  background: currentColor;
+  opacity: .055;
+}
+
+.codflow-kpi-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.codflow-kpi-icon {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #f6f7fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.codflow-kpi-label {
+  color: #657186;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.codflow-kpi-value {
+  margin-top: 15px;
+  color: #121a29;
+  font-size: clamp(22px,1.9vw,29px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.025em;
+}
+
+html[dir="rtl"] .codflow-kpi-value { letter-spacing: 0; }
+
+.codflow-kpi-meta {
+  margin-top: 8px;
+  color: #9aa4b3;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.codflow-kpi-indigo { color: #6366f1; }
+.codflow-kpi-emerald { color: #10b981; }
+.codflow-kpi-violet { color: #8b5cf6; }
+.codflow-kpi-rose { color: #f43f5e; }
+.codflow-kpi-amber { color: #f59e0b; }
+.codflow-kpi-cyan { color: #06b6d4; }
+
+.codflow-panel {
+  min-width: 0;
+  padding: 18px;
+  border-radius: var(--cf-radius-xl);
+  background: rgba(255,255,255,.96);
+  border: 1px solid #e8ecf3;
+  box-shadow: var(--cf-shadow);
+}
+
+.codflow-panel-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.codflow-panel-heading.compact {
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.codflow-panel-heading h2 {
+  color: #172033;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.codflow-panel-heading p {
+  margin-top: 4px;
+  color: #98a3b3;
+  font-size: 10px;
+}
+
+.codflow-text-link {
+  color: #625cf6;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.codflow-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(8,minmax(0,1fr));
+  gap: 10px;
+}
+
+.codflow-quick-card {
+  min-height: 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 8px;
+  border-radius: 17px;
+  background: #fff;
+  border: 1px solid #edf0f5;
+  color: #374151;
+  text-align: center;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.codflow-quick-card:hover {
+  transform: translateY(-3px);
+  border-color: #dce2ec;
+  box-shadow: 0 13px 26px rgba(15,23,42,.075);
+}
+
+.codflow-quick-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #f6f7fb;
+  font-size: 20px;
+}
+
+.codflow-quick-card b {
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.codflow-quick-card small {
+  color: #a0a9b7;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.codflow-quick-card.tone-indigo .codflow-quick-icon { background:#eef0ff; }
+.codflow-quick-card.tone-emerald .codflow-quick-icon { background:#ecfdf5; }
+.codflow-quick-card.tone-violet .codflow-quick-icon { background:#f5f3ff; }
+.codflow-quick-card.tone-amber .codflow-quick-icon { background:#fffbeb; }
+.codflow-quick-card.tone-cyan .codflow-quick-icon { background:#ecfeff; }
+.codflow-quick-card.tone-rose .codflow-quick-icon { background:#fff1f2; }
+.codflow-quick-card.tone-blue .codflow-quick-icon { background:#eff6ff; }
+.codflow-quick-card.tone-slate .codflow-quick-icon { background:#f1f5f9; }
+
+.codflow-analytics-grid {
+  display: grid;
+  grid-template-columns: minmax(0,1.55fr) minmax(320px,.8fr);
+  gap: 16px;
+}
+
+.codflow-chart-panel { padding-bottom: 10px; }
+
+.codflow-status-legend {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px 12px;
+  padding: 0 8px 8px;
+}
+
+.codflow-status-legend > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 8px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.codflow-status-legend > div > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.codflow-status-legend b {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #657186;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.codflow-status-legend small {
+  color: #a0a9b7;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.codflow-agent-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 12px;
+}
+
+.codflow-agent-card {
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  box-shadow: 0 8px 24px rgba(15,23,42,.035);
+}
+
+.codflow-agent-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid #eff2f6;
+}
+
+.codflow-agent-avatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.codflow-agent-head b {
+  color: #273043;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.codflow-agent-head small {
+  margin-top: 2px;
+  color: #9aa4b4;
+  font-size: 9px;
+}
+
+.codflow-active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 8px;
+  font-weight: 850;
+}
+
+.codflow-active-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #10b981;
+}
+
+.codflow-agent-stats {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 1px;
+  background: #eef1f5;
+}
+
+.codflow-agent-stats > div {
+  min-width: 0;
+  padding: 10px 6px;
+  background: #fff;
+  text-align: center;
+}
+
+.codflow-agent-stats b {
+  display: block;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.codflow-agent-stats span {
+  display: block;
+  margin-top: 2px;
+  color: #9aa4b4;
+  font-size: 7px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.codflow-agent-rates {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  background: #fafbfe;
+}
+
+.codflow-agent-rates span,
+.codflow-agent-rates b {
+  color: #758196;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.codflow-rate-track {
+  height: 5px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e9edf3;
+}
+
+.codflow-rate-fill {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.codflow-rate-fill.emerald { background: #10b981; }
+.codflow-rate-fill.indigo { background: #6366f1; }
+
+.codflow-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0,1.15fr) minmax(320px,.85fr);
+  gap: 16px;
+}
+
+.codflow-activity-list,
+.codflow-callback-list {
+  border-top: 1px solid #f0f2f6;
+}
+
+.codflow-activity-row,
+.codflow-callback-row {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px solid #f2f4f7;
+}
+
+.codflow-activity-row:last-child,
+.codflow-callback-row:last-child { border-bottom: 0; }
+
+.codflow-activity-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 999px;
+  background: #6366f1;
+  box-shadow: 0 0 0 4px #eef2ff;
+}
+
+.codflow-activity-row > div,
+.codflow-callback-row > div {
+  flex: 1;
+}
+
+.codflow-activity-row b,
+.codflow-callback-row b {
+  display: block;
+  color: #394357;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.codflow-activity-row span:not(.codflow-activity-dot),
+.codflow-callback-row small {
+  display: block;
+  margin-top: 2px;
+  color: #9aa4b4;
+  font-size: 9px;
+}
+
+.codflow-activity-row time {
+  color: #a0a9b7;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.codflow-phone-chip {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #fffbeb;
+  color: #d97706;
+  font-size: 13px;
+}
+
+.codflow-phone-chip.is-overdue {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.codflow-callback-time {
+  flex: 0 0 auto !important;
+  text-align: end;
+}
+
+.codflow-callback-time b {
+  font-size: 9px;
+}
+
+.codflow-empty-state {
+  min-height: 130px;
+  display: grid;
+  place-items: center;
+  color: #a0a9b7;
+  font-size: 10px;
+}
+
+.codflow-mobile-overlay,
+.codflow-mobile-bottom-nav { display: none; }
+
+/* Tablets */
+@media (max-width: 1280px) {
+  .codflow-kpi-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .codflow-quick-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .codflow-agent-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 1024px) {
+  :root { --cf-sidebar: 224px; }
+  .codflow-analytics-grid,
+  .codflow-bottom-grid { grid-template-columns: 1fr; }
+}
+
+/* Mobile / small tablet */
+@media (max-width: 900px) {
+  .codflow-sidebar {
+    transform: translateX(-105%);
+    width: min(86vw, 300px);
+    transition: transform .22s ease;
+    box-shadow: 20px 0 60px rgba(15,23,42,.18);
+  }
+
+  html[dir="rtl"] .codflow-sidebar { transform: translateX(105%); }
+  .codflow-sidebar.is-open { transform: translateX(0); }
+
+  .codflow-sidebar-close { display: inline-flex; }
+
+  .codflow-mobile-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    border: 0;
+    background: rgba(15,23,42,.34);
+    backdrop-filter: blur(2px);
+  }
+
+  .codflow-main-shell { margin-inline-start: 0; }
+  .codflow-mobile-menu-button { display: inline-flex; }
+
+  .codflow-topbar-inner { padding: 0 16px; }
+  .codflow-main-content { padding: 20px 16px 92px; }
+
+  .codflow-mobile-bottom-nav {
+    position: fixed;
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    inset-inline: 12px;
+    bottom: 10px;
+    z-index: 42;
+    min-height: 64px;
+    padding: 6px;
+    border-radius: 20px;
+    background: rgba(255,255,255,.95);
+    border: 1px solid #e4e8ef;
+    box-shadow: 0 18px 45px rgba(15,23,42,.16);
+    backdrop-filter: blur(18px);
+  }
+
+  .codflow-mobile-bottom-nav a {
+    position: relative;
+    min-width: 0;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 14px;
+    color: #9aa4b4;
+    font-size: 8px;
+    font-weight: 800;
+  }
+
+  .codflow-mobile-bottom-nav a.is-active {
+    background: #f0efff;
+    color: #5d56e5;
+  }
+
+  .codflow-mobile-bottom-nav a b {
+    position: absolute;
+    top: 2px;
+    inset-inline-end: 9px;
+    min-width: 15px;
+    height: 15px;
+    display: grid;
+    place-items: center;
+    padding: 0 3px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 7px;
+  }
+
+  .codflow-periods {
+    display: flex;
+    width: max-content;
+  }
+
+  .codflow-filter-bar {
+    overflow-x: auto;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .codflow-custom-dates {
+    flex-wrap: wrap;
+  }
+
+  .codflow-agent-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .codflow-topbar { height: 64px; }
+  .codflow-page-crumb span,
+  .codflow-user-copy,
+  .codflow-lang-switch { display: none; }
+
+  .codflow-main-content { padding: 16px 12px 90px; }
+  .codflow-dashboard { gap: 13px; }
+
+  .codflow-dashboard-hero {
+    min-height: 76px;
+    align-items: flex-start;
+  }
+
+  .codflow-dashboard-hero h1 { font-size: 24px; }
+  .codflow-live-chip { display: none; }
+
+  .codflow-kpi-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 9px;
+  }
+
+  .codflow-kpi {
+    min-height: 122px;
+    padding: 13px;
+    border-radius: 17px;
+  }
+
+  .codflow-kpi-icon {
+    min-width: 30px;
+    height: 30px;
+    border-radius: 10px;
+  }
+
+  .codflow-kpi-label { font-size: 9px; }
+  .codflow-kpi-value { font-size: 22px; }
+
+  .codflow-panel {
+    padding: 13px;
+    border-radius: 18px;
+  }
+
+  .codflow-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .codflow-quick-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 8px;
+  }
+
+  .codflow-quick-card {
+    min-height: 96px;
+    border-radius: 15px;
+  }
+
+  .codflow-analytics-grid,
+  .codflow-bottom-grid { gap: 12px; }
+
+  .codflow-status-legend { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 380px) {
+  .codflow-main-content { padding-inline: 9px; }
+  .codflow-kpi { padding: 11px; }
+  .codflow-kpi-value { font-size: 20px; }
+}
+
+
 
