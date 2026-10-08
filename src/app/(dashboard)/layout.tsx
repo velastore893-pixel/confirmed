@@ -49,7 +49,7 @@ const navItems = [
   { href: "/reports", icon: "reports", labelKey: "nav.reports", roles: ["admin", "employee", "client"] },
   { href: "/employees", icon: "employees", labelKey: "nav.employees", roles: ["admin"] },
   { href: "/clients", icon: "clients", labelKey: "nav.clients", roles: ["admin"] },
-  { href: "/delivery", icon: "delivery", labelKey: "nav.delivery", roles: ["admin"] },
+  { href: "/delivery", icon: "delivery", labelKey: "nav.delivery", roles: ["admin", "client"] },
   { href: "/distribution", icon: "distribution", labelKey: "nav.distribution", roles: ["admin"] },
   { href: "/finance", icon: "finance", labelKey: "nav.finance", roles: ["admin"] },
   { href: "/notifications", icon: "notifications", labelKey: "nav.notifications", roles: ["admin", "employee", "client"] },
@@ -256,7 +256,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       <nav className="codflow-mobile-bottom-nav">
         {filteredNav
-          .filter((item) => ["/", "/orders", "/stores", "/notifications"].includes(item.href))
+          .filter((item) => ["/", "/orders", "/stores", "/delivery", "/notifications"].includes(item.href))
           .map((item) => {
             const active =
               pathname === item.href ||
