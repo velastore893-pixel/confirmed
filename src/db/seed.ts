@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import crypto from "crypto";
 
 function generateTempPassword(): string {
+  // Generate a strong 16-char password
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
   let pw = "";
   const bytes = crypto.randomBytes(16);
@@ -20,17 +21,20 @@ function generateTempPassword(): string {
 export async function seed() {
   console.log("Seeding database...");
 
+  // Check if admin exists
   const existingAdmin = await db.select().from(users).where(eq(users.email, "admin@codflow.ma")).limit(1);
   if (existingAdmin.length > 0) {
     console.log("Database already seeded.");
     return;
   }
 
+  // Generate strong temporary passwords
   const adminTempPw = process.env.ADMIN_INITIAL_PASSWORD || generateTempPassword();
   const emp1TempPw = generateTempPassword();
   const emp2TempPw = generateTempPassword();
   const clientTempPw = generateTempPassword();
 
+  // Create admin
   const adminHash = await hashPassword(adminTempPw);
   const [admin] = await db.insert(users).values({
     email: "admin@codflow.ma", passwordHash: adminHash,
@@ -40,6 +44,7 @@ export async function seed() {
   console.log(`\n=== INITIAL ACCOUNTS (save these!) ===`);
   console.log(`Admin:    admin@codflow.ma / ${adminTempPw}`);
 
+  // Create employees
   const emp1Hash = await hashPassword(emp1TempPw);
   const [emp1User] = await db.insert(users).values({
     email: "yusuf@codflow.ma", passwordHash: emp1Hash,
@@ -60,6 +65,7 @@ export async function seed() {
   }).returning();
   console.log(`Employee: hamza@codflow.ma / ${emp2TempPw}`);
 
+  // Create clients
   const clientHash = await hashPassword(clientTempPw);
   const [client1User] = await db.insert(users).values({
     email: "mohammed@nukhba.ma", passwordHash: clientHash,
@@ -82,12 +88,17 @@ export async function seed() {
   console.log(`Client:   sara@stylemaroc.ma / ${clientTempPw}`);
   console.log(`====================================\n`);
 
+  // E-commerce platforms
   const [platformShopify] = await db.insert(ecommercePlatforms).values({ name: "Shopify", slug: "shopify", icon: "🛒" }).returning();
   const [platformYoucan] = await db.insert(ecommercePlatforms).values({ name: "YouCan", slug: "youcan", icon: "🛍️" }).returning();
   const [platformWoo] = await db.insert(ecommercePlatforms).values({ name: "WooCommerce", slug: "woocommerce", icon: "🏪" }).returning();
   const [platformPresta] = await db.insert(ecommercePlatforms).values({ name: "PrestaShop", slug: "prestashop", icon: "🏬" }).returning();
   await db.insert(ecommercePlatforms).values({ name: "Google Sheets", slug: "google_sheets", icon: "📊" }).returning();
 
+  // Delivery companies
+  // SIFT is a verified API integration. Other providers are available in the
+  // catalog but stay in manual/pending mode until their official API contract
+  // is configured. We intentionally do not guess endpoints or credentials.
   const [del1] = await db.insert(deliveryCompanies).values({
     name: "Amana", slug: "amana", isActive: true, hasApi: false,
     codAvailable: true, cities: [], regions: [],
@@ -122,6 +133,7 @@ export async function seed() {
     },
   }).returning();
 
+  // Stores
   const [store1] = await db.insert(stores).values({
     clientId: client1.id, assignedEmployeeId: emp1.id, name: "NUKHBA Online",
     platformId: platformShopify.id, deliveryCompanyId: del1.id,
@@ -140,6 +152,7 @@ export async function seed() {
     status: "pending", url: "https://nukhba.ma",
   });
 
+  // Customers
   const customersData = [
     { clientId: client1.id, name: "Ahmed Bennani", phone: "+212655111111", city: "Marrakech", region: "Marrakech-Safi", address: "78 Rue Atlas" },
     { clientId: client1.id, name: "Fatima Zahra", phone: "+212655222222", city: "Casablanca", region: "Casablanca-Settat", address: "12 Rue Mohammed V" },
@@ -149,6 +162,7 @@ export async function seed() {
   ];
   const insertedCustomers = await db.insert(customers).values(customersData).returning();
 
+  // Create sample orders
   const statuses = ["new", "assigned", "calling", "confirmed", "sent_to_delivery", "in_transit", "delivered", "returned", "no_answer", "callback", "cancelled"] as const;
   const products = [
     ["T-shirt Premium", "Sneakers Classic"], ["Dress Summer", "Sunglasses"], ["Jacket Winter", "Scarf Silk"],
@@ -195,6 +209,7 @@ export async function seed() {
 
   const insertedOrders = await db.insert(orders).values(orderData).returning();
 
+  // Order items
   const itemsData: Array<{ orderId: string; productName: string; quantity: number; unitPrice: string; totalPrice: string }> = [];
   for (const order of insertedOrders) {
     const prods = products[Math.floor(Math.random() * products.length)];
@@ -206,6 +221,7 @@ export async function seed() {
   }
   await db.insert(orderItems).values(itemsData);
 
+  // Status history
   const historyData: Array<{ orderId: string; newStatus: typeof statuses[number]; previousStatus: typeof statuses[number] | null; changedByUserId: string; createdAt: Date }> = [];
   for (const order of insertedOrders) {
     historyData.push({ orderId: order.id, newStatus: "new" as typeof statuses[number], previousStatus: null, changedByUserId: admin.id, createdAt: new Date(order.createdAt || new Date()) });
@@ -215,6 +231,7 @@ export async function seed() {
   }
   await db.insert(orderStatusHistory).values(historyData);
 
+  // Distribution rules
   await db.insert(distributionRules).values([
     { employeeId: emp1.id, storeId: store1.id, percentage: 60, priority: 1, isActive: true },
     { employeeId: emp2.id, storeId: store1.id, percentage: 40, priority: 1, isActive: true },
@@ -224,6 +241,7 @@ export async function seed() {
     { employeeId: emp2.id, percentage: 50, priority: 5, isActive: true },
   ]);
 
+  // System settings
   await db.insert(systemSettings).values([
     { key: "default_price_per_order", value: "10.00", category: "pricing" },
     { key: "default_commission_per_order", value: "3.00", category: "pricing" },
@@ -237,6 +255,7 @@ export async function seed() {
     { key: "bank_rib", value: "011 780 0001 2345 6789 0123 45", category: "finance" },
   ]);
 
+  // Notifications
   await db.insert(notifications).values([
     { userId: admin.id, type: "store_pending", title: "New store pending activation", body: "NUKHBA PrestaShop requires activation", isRead: false, relatedType: "store" },
     { userId: admin.id, type: "order_new", title: "New orders received", body: "5 new orders from NUKHBA", isRead: false, relatedType: "order" },
@@ -244,6 +263,7 @@ export async function seed() {
     { userId: client1User.id, type: "store_activated", title: "Store activated", body: "NUKHBA Online is now active", isRead: true, relatedType: "store" },
   ]);
 
+  // Activity logs
   await db.insert(activityLogs).values([
     { userId: admin.id, action: "system.seeded", entityType: "system", newValue: { message: "Database seeded" } },
     { userId: admin.id, action: "store.activated", entityType: "store", entityId: store1.id, newValue: { status: "active" } },
@@ -253,13 +273,15 @@ export async function seed() {
   console.log("Database seeded successfully!");
 }
 
-seed()
-  .then(() => {
-    console.log("Seed completed successfully.");
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error("Seed failed:", error);
-    process.exit(1);
-  });
+if (require.main === module) {
+  seed()
+    .then(() => {
+      console.log("Seed completed successfully.");
+    })
+    .catch((error) => {
+      console.error("Seed failed:", error);
+      process.exitCode = 1;
+    });
+}
+
 
