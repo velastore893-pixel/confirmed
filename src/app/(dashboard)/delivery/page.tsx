@@ -1,111 +1,943 @@
 "use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/lib/auth-context";
 
-type DeliveryConfig = { testPath?: string; authType?: string; apiKeyHeader?: string; authHeader?: string; authPrefix?: string; testMethod?: string; integrationState?: "ready" | "needs_documentation" | "manual"; notes?: string };
-type DeliveryCompany = { id: string; name: string; slug: string; isActive: boolean; hasApi: boolean; codAvailable: boolean; cities: string[]; regions: string[]; apiBaseUrl?: string; config?: DeliveryConfig };
+type DeliveryConfig = {
+  testPath?: string;
+  authType?: string;
+  apiKeyHeader?: string;
+  authHeader?: string;
+  authPrefix?: string;
+  testMethod?: string;
+  integrationState?: "ready" | "needs_documentation" | "manual";
+  notes?: string;
+};
+
+type DeliveryCompany = {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  hasApi: boolean;
+  codAvailable: boolean;
+  cities: string[];
+  regions: string[];
+  apiBaseUrl?: string;
+  config?: DeliveryConfig;
+};
+
+const defaultForm = {
+  name: "",
+  slug: "",
+  hasApi: false,
+  codAvailable: true,
+  cities: "",
+  regions: "",
+  apiBaseUrl: "",
+  testPath: "",
+  authType: "bearer",
+  apiKeyHeader: "X-API-Key",
+  authHeader: "Authorization",
+  authPrefix: "",
+};
 
 export default function DeliveryPage() {
   const { t, dir } = useI18n();
   const { user } = useAuth();
+
   const [companies, setCompanies] = useState<DeliveryCompany[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", slug: "", hasApi: false, codAvailable: true, cities: "", regions: "", apiBaseUrl: "", testPath: "", authType: "bearer", apiKeyHeader: "X-API-Key", authHeader: "Authorization", authPrefix: "" });
+  const [form, setForm] = useState(defaultForm);
   const [toast, setToast] = useState("");
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const fetchCompanies = useCallback(async () => {
-    try { const res = await fetch("/api/delivery"); if (res.ok) { const d = await res.json(); setCompanies(d.items); } } catch {} finally { setLoading(false); }
+    try {
+      const res = await fetch("/api/delivery", {
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCompanies(data.items || []);
+      }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   }, []);
-  useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
+
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const openCreate = () => {
-    setEditId(null); setError("");
-    setForm({ name: "", slug: "", hasApi: false, codAvailable: true, cities: "", regions: "", apiBaseUrl: "", testPath: "", authType: "bearer", apiKeyHeader: "X-API-Key", authHeader: "Authorization", authPrefix: "" });
+    setEditId(null);
+    setError("");
+    setForm(defaultForm);
     setShowModal(true);
   };
-  const openEdit = (c: DeliveryCompany) => {
-    setEditId(c.id); setError("");
+
+  const openEdit = (company: DeliveryCompany) => {
+    setEditId(company.id);
+    setError("");
+
     setForm({
-      name: c.name, slug: c.slug, hasApi: c.hasApi, codAvailable: c.codAvailable,
-      cities: (c.cities || []).join(", "), regions: (c.regions || []).join(", "),
-      apiBaseUrl: c.apiBaseUrl || "", testPath: c.config?.testPath || "", authType: c.config?.authType || "bearer",
-      apiKeyHeader: c.config?.apiKeyHeader || "X-API-Key", authHeader: c.config?.authHeader || "Authorization", authPrefix: c.config?.authPrefix || "",
+      name: company.name,
+      slug: company.slug,
+      hasApi: company.hasApi,
+      codAvailable: company.codAvailable,
+      cities: (company.cities || []).join(", "),
+      regions: (company.regions || []).join(", "),
+      apiBaseUrl: company.apiBaseUrl || "",
+      testPath: company.config?.testPath || "",
+      authType: company.config?.authType || "bearer",
+      apiKeyHeader: company.config?.apiKeyHeader || "X-API-Key",
+      authHeader: company.config?.authHeader || "Authorization",
+      authPrefix: company.config?.authPrefix || "",
     });
+
     setShowModal(true);
   };
 
   const handleSave = async () => {
     setError("");
-    if (!form.name.trim() || !form.slug.trim()) { setError(dir === "rtl" ? "الاسم والرمز مطلوبان" : "Name and slug are required"); return; }
-    if (form.hasApi && (!form.apiBaseUrl.trim() || !form.testPath.trim())) {
-      setError(dir === "rtl" ? "شركة API خاصها رابط API ومسار اختبار حقيقي" : "API companies need a real API Base URL and Test Path"); return;
+
+    if (!form.name.trim() || !form.slug.trim()) {
+      setError(
+        dir === "rtl"
+          ? "اسم الشركة والمعرف مطلوبان."
+          : "Company name and slug are required."
+      );
+      return;
     }
-    const url = editId ? `/api/delivery/${editId}` : "/api/delivery";
-    const method = editId ? "PATCH" : "POST";
-    const body = {
-      name: form.name, slug: form.slug, hasApi: form.hasApi, codAvailable: form.codAvailable, apiBaseUrl: form.apiBaseUrl || null,
-      cities: form.cities.split(",").map(s => s.trim()).filter(Boolean), regions: form.regions.split(",").map(s => s.trim()).filter(Boolean),
-      config: { testPath: form.testPath, authType: form.authType, apiKeyHeader: form.apiKeyHeader, authHeader: form.authHeader, authPrefix: form.authPrefix, testMethod: "GET" },
-    };
-    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (res.ok) { setShowModal(false); fetchCompanies(); setToast(t("common.success")); setTimeout(() => setToast(""), 3000); }
-    else { const d = await res.json().catch(() => ({})); setError(d.error || "Could not save delivery company"); }
+
+    if (
+      form.hasApi &&
+      (!form.apiBaseUrl.trim() || !form.testPath.trim())
+    ) {
+      setError(
+        dir === "rtl"
+          ? "شركة API خاصها API Base URL و Test Path."
+          : "API companies require an API Base URL and Test Path."
+      );
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const url = editId
+        ? `/api/delivery/${editId}`
+        : "/api/delivery";
+
+      const method = editId ? "PATCH" : "POST";
+
+      const body = {
+        name: form.name.trim(),
+        slug: form.slug.trim(),
+        hasApi: form.hasApi,
+        codAvailable: form.codAvailable,
+        apiBaseUrl: form.apiBaseUrl.trim() || null,
+
+        cities: form.cities
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        regions: form.regions
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        config: {
+          testPath: form.testPath.trim(),
+          authType: form.authType,
+          apiKeyHeader: form.apiKeyHeader.trim(),
+          authHeader: form.authHeader.trim(),
+          authPrefix: form.authPrefix,
+          testMethod: "GET",
+        },
+      };
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        setShowModal(false);
+        await fetchCompanies();
+
+        setToast(
+          dir === "rtl"
+            ? "تم حفظ شركة التوصيل بنجاح"
+            : "Delivery company saved successfully"
+        );
+
+        setTimeout(() => setToast(""), 3000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+
+        setError(
+          data.error ||
+            (dir === "rtl"
+              ? "تعذر حفظ شركة التوصيل"
+              : "Could not save delivery company")
+        );
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (user?.role !== "admin") return <div className="empty-state"><div className="empty-state-icon">🔒</div></div>;
+  const authLabel = (company: DeliveryCompany) => {
+    const type = company.config?.authType;
+
+    if (!company.hasApi) return "Manual";
+
+    if (type === "custom") {
+      return company.config?.authHeader || "Custom Header";
+    }
+
+    if (type === "api_key") return "API Key";
+    if (type === "basic") return "Basic Auth";
+    if (type === "none") return "No Auth";
+
+    return "Bearer Token";
+  };
+
+  if (user?.role !== "admin") {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <svg
+            className="mx-auto mb-4 text-slate-400"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
+            <rect x="3" y="11" width="18" height="10" rx="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
+          </svg>
+
+          <p className="text-sm text-slate-500">
+            {dir === "rtl"
+              ? "ليس لديك صلاحية لعرض هذه الصفحة."
+              : "You do not have permission to view this page."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {toast && <div className="toast toast-success">{toast}</div>}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div><h1 className="text-2xl font-bold">{t("delivery.title")}</h1><p className="text-sm text-slate-500 mt-1">{dir === "rtl" ? "هيئ API الحقيقي لكل شركة قبل أن يربطها العميل بمتجره" : "Configure each provider's real API before clients connect it to a store"}</p></div>
-        <button className="btn btn-primary" onClick={openCreate}>+ {t("delivery.addCompany")}</button>
-      </div>
+    <div className="mx-auto w-full max-w-[1400px] space-y-7">
+      {toast && (
+        <div className="toast toast-success">
+          {toast}
+        </div>
+      )}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading ? <div className="col-span-3 text-center py-8"><div className="spinner mx-auto" /></div>
-        : companies.map(c => (
-          <div key={c.id} className="card"><div className="card-body space-y-3">
-            <div className="flex items-center justify-between"><h3 className="font-bold text-lg">{c.name}</h3><span className={`badge badge-${c.isActive ? "active" : "suspended"}`}>{t(`statuses.${c.isActive ? "active" : "suspended"}`)}</span></div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-lg bg-slate-50 p-2"><span className="text-slate-400 block">Slug</span><b>{c.slug}</b></div>
-              <div className="rounded-lg bg-slate-50 p-2"><span className="text-slate-400 block">Mode</span><b>{c.hasApi ? "API" : (c.config?.integrationState === "needs_documentation" ? "API pending" : "Manual")}</b></div>
-            </div>
-            {c.config?.integrationState === "needs_documentation" && <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">{dir === "rtl" ? "مهيأة فالنظام ولكن الربط الأوتوماتيكي باقي محتاج الوثائق الرسمية ديال API." : "Provider is available in CODFlow, but automatic API integration still needs official documentation."}</div>}
-            {c.hasApi && <div className="rounded-xl border border-slate-200 p-3 text-xs space-y-1"><div className="font-semibold text-slate-700">API configuration</div><div className="text-slate-500 break-all">{c.apiBaseUrl || "No base URL"}</div><div className="text-slate-500">Test: {c.config?.testPath || "Not configured"}</div><div className="text-slate-500">Auth: {c.config?.authType || "Not configured"}</div></div>}
-            <button className="btn btn-sm btn-secondary" onClick={() => openEdit(c)}>{t("common.edit")}</button>
-          </div></div>
-        ))}
-      </div>
-
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}><div className="modal max-w-2xl" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">{editId ? t("delivery.editCompany") : t("delivery.addCompany")}<button className="btn btn-icon btn-secondary" onClick={() => setShowModal(false)}>✕</button></div>
-          <div className="modal-body space-y-4">
-            {error && <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">{error}</div>}
-            <div className="form-grid form-grid-2">
-              <div className="form-group"><label className="form-label">{t("delivery.name")}</label><input className="input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-              <div className="form-group"><label className="form-label">{t("delivery.slug")}</label><input className="input" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
-              <div className="form-group"><label className="form-label">{t("delivery.cities")}</label><input className="input" value={form.cities} onChange={e => setForm(f => ({ ...f, cities: e.target.value }))} placeholder="Marrakech, Casablanca, Rabat" /></div>
-              <div className="form-group"><label className="form-label">{t("delivery.hasApi")}</label><select className="input" value={form.hasApi ? "yes" : "no"} onChange={e => setForm(f => ({ ...f, hasApi: e.target.value === "yes" }))}><option value="yes">{t("common.yes")}</option><option value="no">{t("common.no")}</option></select></div>
-            </div>
-            {form.hasApi && <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 space-y-4">
-              <div><h3 className="font-semibold text-slate-900">{dir === "rtl" ? "إعداد API الحقيقي" : "Real API configuration"}</h3><p className="text-xs text-slate-500 mt-1">{dir === "rtl" ? "استعمل القيم الرسمية التي تعطيها شركة التوصيل. السيستم لن يعتبر الربط ناجحاً بدون طلب API ناجح." : "Use values from the provider. CODFlow will not mark it connected without a successful real API request."}</p></div>
-              <div className="form-grid form-grid-2">
-                <div className="form-group"><label className="form-label">API Base URL</label><input className="input" dir="ltr" value={form.apiBaseUrl} onChange={e => setForm(f => ({ ...f, apiBaseUrl: e.target.value }))} placeholder="https://api.company.ma" /></div>
-                <div className="form-group"><label className="form-label">Test Path</label><input className="input" dir="ltr" value={form.testPath} onChange={e => setForm(f => ({ ...f, testPath: e.target.value }))} placeholder="/api/account or /cities" /></div>
-                <div className="form-group"><label className="form-label">Authentication</label><select className="input" value={form.authType} onChange={e => setForm(f => ({ ...f, authType: e.target.value }))}><option value="bearer">Bearer token</option><option value="api_key">API Key header</option><option value="basic">Username + Password</option><option value="custom">Custom header</option><option value="none">No authentication</option></select></div>
-                {form.authType === "api_key" && <div className="form-group"><label className="form-label">API Key Header</label><input className="input" dir="ltr" value={form.apiKeyHeader} onChange={e => setForm(f => ({ ...f, apiKeyHeader: e.target.value }))} placeholder="X-API-Key" /></div>}
-                {form.authType === "custom" && <><div className="form-group"><label className="form-label">Auth Header</label><input className="input" dir="ltr" value={form.authHeader} onChange={e => setForm(f => ({ ...f, authHeader: e.target.value }))} /></div><div className="form-group"><label className="form-label">Prefix</label><input className="input" dir="ltr" value={form.authPrefix} onChange={e => setForm(f => ({ ...f, authPrefix: e.target.value }))} placeholder="Token / ApiKey / empty" /></div></>}
-              </div>
-            </div>}
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-indigo-600">
+            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+            CODFlow
           </div>
-          <div className="modal-footer"><button className="btn btn-secondary" onClick={() => setShowModal(false)}>{t("common.cancel")}</button><button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button></div>
-        </div></div>
+
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+            {dir === "rtl"
+              ? "شركات التوصيل"
+              : "Delivery Companies"}
+          </h1>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            {dir === "rtl"
+              ? "أدر شركات التوصيل وإعدادات الربط من مكان واحد. الكليان غادي يشوف غير الشركات المهيأة والمتاحة."
+              : "Manage delivery providers and their API connection settings from one place."}
+          </p>
+        </div>
+
+        <button
+          onClick={openCreate}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:shadow-xl"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+
+          {dir === "rtl"
+            ? "إضافة شركة"
+            : "Add Company"}
+        </button>
+      </div>
+
+      {/* Summary */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="text-xs font-medium text-slate-500">
+            {dir === "rtl" ? "إجمالي الشركات" : "Total"}
+          </div>
+          <div className="mt-1 text-2xl font-bold text-slate-900">
+            {companies.length}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="text-xs font-medium text-slate-500">
+            {dir === "rtl" ? "API" : "API"}
+          </div>
+          <div className="mt-1 text-2xl font-bold text-slate-900">
+            {companies.filter((c) => c.hasApi).length}
+          </div>
+        </div>
+
+        <div className="col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-1">
+          <div className="text-xs font-medium text-slate-500">
+            {dir === "rtl" ? "الشركات النشطة" : "Active"}
+          </div>
+          <div className="mt-1 text-2xl font-bold text-emerald-600">
+            {companies.filter((c) => c.isActive).length}
+          </div>
+        </div>
+      </div>
+
+      {/* Cards */}
+      {loading ? (
+        <div className="flex min-h-[300px] items-center justify-center">
+          <div className="spinner" />
+        </div>
+      ) : companies.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
+              <path d="M3 7h18M5 7l1 13h12l1-13M9 11v5M15 11v5M8 7l1-3h6l1 3" />
+            </svg>
+          </div>
+
+          <h3 className="font-semibold text-slate-900">
+            {dir === "rtl"
+              ? "ما كايناش شركات توصيل"
+              : "No delivery companies"}
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            {dir === "rtl"
+              ? "بدا بإضافة أول شركة توصيل."
+              : "Start by adding your first delivery provider."}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          {companies.map((company) => {
+            const isSift =
+              company.slug === "sift-livraison" ||
+              company.slug === "sift";
+
+            return (
+              <div
+                key={company.id}
+                className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <div className="p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-100 text-indigo-600">
+                        <svg
+                          width="23"
+                          height="23"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                        >
+                          <path d="M3 6h13v10H3z" />
+                          <path d="M16 9h3l2 3v4h-5z" />
+                          <circle cx="7" cy="18" r="2" />
+                          <circle cx="18" cy="18" r="2" />
+                        </svg>
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate text-lg font-bold text-slate-950">
+                            {company.name}
+                          </h3>
+
+                          {isSift && (
+                            <span className="rounded-full bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700">
+                              SIFT
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-1 text-xs text-slate-400">
+                          {company.slug}
+                        </div>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        company.isActive
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          company.isActive
+                            ? "bg-emerald-500"
+                            : "bg-slate-400"
+                        }`}
+                      />
+
+                      {company.isActive
+                        ? dir === "rtl"
+                          ? "نشط"
+                          : "Active"
+                        : dir === "rtl"
+                        ? "غير نشط"
+                        : "Inactive"}
+                    </span>
+                  </div>
+
+                  <div className="my-5 h-px bg-slate-100" />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-slate-50 p-3.5">
+                      <div className="text-[11px] font-medium text-slate-400">
+                        {dir === "rtl"
+                          ? "نوع الربط"
+                          : "Connection"}
+                      </div>
+
+                      <div className="mt-1 text-sm font-semibold text-slate-800">
+                        {company.hasApi ? "API" : "Manual"}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-50 p-3.5">
+                      <div className="text-[11px] font-medium text-slate-400">
+                        {dir === "rtl"
+                          ? "المصادقة"
+                          : "Authentication"}
+                      </div>
+
+                      <div className="mt-1 truncate text-sm font-semibold text-slate-800">
+                        {authLabel(company)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {company.hasApi && (
+                    <div className="mt-3 rounded-2xl border border-slate-100 bg-white p-4">
+                      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        API Base URL
+                      </div>
+
+                      <div
+                        dir="ltr"
+                        className="truncate text-sm font-medium text-slate-700"
+                      >
+                        {company.apiBaseUrl || "—"}
+                      </div>
+
+                      {isSift &&
+                        company.config?.authHeader === "Special-Token" && (
+                          <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.2"
+                            >
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+
+                            Special-Token configured
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-5 py-4 sm:px-6">
+                  <div className="text-xs text-slate-400">
+                    {company.codAvailable
+                      ? dir === "rtl"
+                        ? "الدفع عند الاستلام متاح"
+                        : "COD available"
+                      : dir === "rtl"
+                      ? "COD غير متاح"
+                      : "COD unavailable"}
+                  </div>
+
+                  <button
+                    onClick={() => openEdit(company)}
+                    className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:text-indigo-600"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 013 3L8 18l-4 1 1-4z" />
+                    </svg>
+
+                    {dir === "rtl"
+                      ? "تعديل الإعدادات"
+                      : "Edit settings"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-6"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">
+                  {editId
+                    ? dir === "rtl"
+                      ? "تعديل شركة التوصيل"
+                      : "Edit Delivery Company"
+                    : dir === "rtl"
+                    ? "إضافة شركة توصيل"
+                    : "Add Delivery Company"}
+                </h2>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  {dir === "rtl"
+                    ? "هيّئ المعلومات العامة وربط الـAPI."
+                    : "Configure company information and API connection."}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="max-h-[calc(92vh-140px)] overflow-y-auto px-5 py-5 sm:px-6">
+              {error && (
+                <div className="mb-5 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-7">
+                {/* General */}
+                <section>
+                  <div className="mb-4">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      {dir === "rtl"
+                        ? "المعلومات العامة"
+                        : "General information"}
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {dir === "rtl"
+                        ? "اسم الشركة والمعرف وطريقة العمل."
+                        : "Company identity and connection mode."}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                        {dir === "rtl" ? "اسم الشركة" : "Company name"}
+                      </label>
+
+                      <input
+                        className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                        value={form.name}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            name: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                        Slug
+                      </label>
+
+                      <input
+                        dir="ltr"
+                        className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                        value={form.slug}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            slug: e.target.value,
+                          }))
+                        }
+                        placeholder="sift-livraison"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                        {dir === "rtl"
+                          ? "نوع الربط"
+                          : "Connection mode"}
+                      </label>
+
+                      <select
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                        value={form.hasApi ? "yes" : "no"}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            hasApi: e.target.value === "yes",
+                          }))
+                        }
+                      >
+                        <option value="yes">API</option>
+                        <option value="no">Manual</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                        COD
+                      </label>
+
+                      <select
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                        value={form.codAvailable ? "yes" : "no"}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            codAvailable:
+                              e.target.value === "yes",
+                          }))
+                        }
+                      >
+                        <option value="yes">
+                          {dir === "rtl" ? "متاح" : "Available"}
+                        </option>
+                        <option value="no">
+                          {dir === "rtl" ? "غير متاح" : "Unavailable"}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Coverage */}
+                <section className="border-t border-slate-100 pt-6">
+                  <div className="mb-4">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      {dir === "rtl"
+                        ? "التغطية"
+                        : "Coverage"}
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                        {dir === "rtl" ? "المدن" : "Cities"}
+                      </label>
+
+                      <input
+                        className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                        value={form.cities}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            cities: e.target.value,
+                          }))
+                        }
+                        placeholder="Casablanca, Rabat, Marrakech"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                        {dir === "rtl"
+                          ? "المناطق"
+                          : "Regions"}
+                      </label>
+
+                      <input
+                        className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                        value={form.regions}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            regions: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                {/* API */}
+                {form.hasApi && (
+                  <section className="border-t border-slate-100 pt-6">
+                    <div className="mb-4 flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4">
+                      <div className="mt-0.5 text-indigo-600">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4M12 8h.01" />
+                        </svg>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900">
+                          {dir === "rtl"
+                            ? "إعداد API"
+                            : "API configuration"}
+                        </h3>
+
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          {dir === "rtl"
+                            ? "هاد الإعدادات كيديرها الـAdmin مرة وحدة. الكليان غادي يدخل غير بيانات الحساب ديالو."
+                            : "These settings are configured once by the admin. Clients only provide their credentials."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                          API Base URL
+                        </label>
+
+                        <input
+                          dir="ltr"
+                          className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                          value={form.apiBaseUrl}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              apiBaseUrl: e.target.value,
+                            }))
+                          }
+                          placeholder="https://app.siftlivraison.com"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                          Test Path
+                        </label>
+
+                        <input
+                          dir="ltr"
+                          className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                          value={form.testPath}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              testPath: e.target.value,
+                            }))
+                          }
+                          placeholder="/api/client/get/list-status"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                          Authentication
+                        </label>
+
+                        <select
+                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                          value={form.authType}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              authType: e.target.value,
+                            }))
+                          }
+                        >
+                          <option value="bearer">
+                            Bearer Token
+                          </option>
+
+                          <option value="api_key">
+                            API Key Header
+                          </option>
+
+                          <option value="basic">
+                            Username + Password
+                          </option>
+
+                          <option value="custom">
+                            Custom Header
+                          </option>
+
+                          <option value="none">
+                            No authentication
+                          </option>
+                        </select>
+                      </div>
+
+                      {form.authType === "api_key" && (
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                            API Key Header
+                          </label>
+
+                          <input
+                            dir="ltr"
+                            className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                            value={form.apiKeyHeader}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                apiKeyHeader: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+                      )}
+
+                      {form.authType === "custom" && (
+                        <>
+                          <div>
+                            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                              Auth Header
+                            </label>
+
+                            <input
+                              dir="ltr"
+                              className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                              value={form.authHeader}
+                              onChange={(e) =>
+                                setForm((f) => ({
+                                  ...f,
+                                  authHeader: e.target.value,
+                                }))
+                              }
+                              placeholder="Special-Token"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                              Prefix
+                            </label>
+
+                            <input
+                              dir="ltr"
+                              className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                              value={form.authPrefix}
+                              onChange={(e) =>
+                                setForm((f) => ({
+                                  ...f,
+                                  authPrefix: e.target.value,
+                                }))
+                              }
+                              placeholder={
+                                dir === "rtl"
+                                  ? "خليه فارغ إذا ما كاينش Prefix"
+                                  : "Leave empty if no prefix"
+                              }
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </section>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-4 sm:px-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                {dir === "rtl" ? "إلغاء" : "Cancel"}
+              </button>
+
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="inline-flex h-10 min-w-[110px] items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 disabled:opacity-60"
+              >
+                {saving
+                  ? dir === "rtl"
+                    ? "جارٍ الحفظ..."
+                    : "Saving..."
+                  : dir === "rtl"
+                  ? "حفظ التغييرات"
+                  : "Save changes"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
