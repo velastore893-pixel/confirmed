@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { formatCurrency } from "@/lib/utils";
@@ -95,25 +94,12 @@ const adminModules: AdminModule[] = [
 export default function DashboardPage() {
   const { t, locale, dir } = useI18n();
   const { user } = useAuth();
-  const router = useRouter();
-
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("month");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [showCustom, setShowCustom] = useState(false);
-
-  useEffect(() => {
-    if (user?.role === "client") {
-      fetch("/api/onboarding/profile")
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.client && !d.client.onboardingComplete) router.replace("/onboarding");
-        })
-        .catch(() => {});
-    }
-  }, [user, router]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
