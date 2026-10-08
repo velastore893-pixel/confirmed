@@ -6,6 +6,9 @@ import { relations } from "drizzle-orm";
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
 export const roleEnum = pgEnum("role", ["admin", "employee", "client"]);
+export const approvalStatusEnum = pgEnum("approval_status", [
+  "pending", "approved", "rejected",
+]);
 export const storeStatusEnum = pgEnum("store_status", ["pending", "active", "suspended"]);
 export const orderStatusEnum = pgEnum("order_status", [
   "new", "assigned", "calling", "confirmed", "sent_to_delivery",
@@ -37,6 +40,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name", { length: 100 }).notNull(),
   phone: varchar("phone", { length: 30 }),
   role: roleEnum("role").notNull(),
+  approvalStatus: approvalStatusEnum("approval_status").notNull().default("approved"),
   isActive: boolean("is_active").notNull().default(true),
   locale: varchar("locale", { length: 5 }).default("ar"),
   lastLoginAt: timestamp("last_login_at"),
@@ -45,6 +49,7 @@ export const users = pgTable("users", {
 }, (t) => [
   index("idx_users_role").on(t.role),
   index("idx_users_active").on(t.isActive),
+  index("idx_users_approval_status").on(t.approvalStatus),
 ]);
 
 // ─── Sessions ────────────────────────────────────────────────────────────────
