@@ -134,6 +134,31 @@ export const deliveryCredentials = pgTable("delivery_credentials", {
   index("idx_delivery_creds_company").on(t.deliveryCompanyId),
 ]);
 
+
+// ─── Client Delivery Connections ───────────────────────────────────────────────
+export const clientDeliveryConnections = pgTable("client_delivery_connections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  clientId: uuid("client_id")
+    .notNull()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  deliveryCompanyId: uuid("delivery_company_id")
+    .notNull()
+    .references(() => deliveryCompanies.id, { onDelete: "cascade" }),
+  credentials: jsonb("credentials").notNull().default({}),
+  connectionStatus: text("connection_status").notNull().default("not_tested"),
+  lastTestAt: timestamp("last_test_at"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (t) => [
+  index("idx_client_delivery_connections_client").on(t.clientId),
+  index("idx_client_delivery_connections_company").on(t.deliveryCompanyId),
+  uniqueIndex("uniq_client_delivery_connections_client_company").on(
+    t.clientId,
+    t.deliveryCompanyId,
+  ),
+]);
+
 // ─── Stores ──────────────────────────────────────────────────────────────────
 export const stores = pgTable("stores", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -446,6 +471,7 @@ export const clientsRelations = relations(clients, ({ one, many }) => ({
   orders: many(orders),
   customers: many(customers),
   invoices: many(invoices),
+  deliveryConnections: many(clientDeliveryConnections),
 }));
 
 export const employeesRelations = relations(employees, ({ one, many }) => ({
@@ -456,6 +482,27 @@ export const employeesRelations = relations(employees, ({ one, many }) => ({
   callbacks: many(callbacks),
   distributionRules: many(distributionRules),
 }));
+
+export const deliveryCompaniesRelations = relations(deliveryCompanies, ({ many }) => ({
+  credentials: many(deliveryCredentials),
+  clientConnections: many(clientDeliveryConnections),
+  stores: many(stores),
+  orders: many(orders),
+}));
+
+export const clientDeliveryConnectionsRelations = relations(
+  clientDeliveryConnections,
+  ({ one }) => ({
+    client: one(clients, {
+      fields: [clientDeliveryConnections.clientId],
+      references: [clients.id],
+    }),
+    deliveryCompany: one(deliveryCompanies, {
+      fields: [clientDeliveryConnections.deliveryCompanyId],
+      references: [deliveryCompanies.id],
+    }),
+  }),
+);
 
 export const storesRelations = relations(stores, ({ one, many }) => ({
   client: one(clients, { fields: [stores.clientId], references: [clients.id] }),
