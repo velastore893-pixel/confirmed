@@ -15,6 +15,14 @@ type DeliveryConfig = {
   notes?: string;
 };
 
+type ClientConnection = {
+  id: string;
+  deliveryCompanyId: string;
+  connectionStatus: "not_tested" | "connected" | "failed" | string;
+  lastTestAt?: string | null;
+  isActive: boolean;
+};
+
 type DeliveryCompany = {
   id: string;
   name: string;
@@ -215,23 +223,14 @@ export default function DeliveryPage() {
     return "Bearer Token";
   };
 
+  if (user?.role === "client") {
+    return <ClientDeliveryPanel companies={companies} loading={loading} dir={dir} />;
+  }
+
   if (user?.role !== "admin") {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <svg
-            className="mx-auto mb-4 text-slate-400"
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <rect x="3" y="11" width="18" height="10" rx="2" />
-            <path d="M7 11V7a5 5 0 0110 0v4" />
-          </svg>
-
           <p className="text-sm text-slate-500">
             {dir === "rtl"
               ? "ليس لديك صلاحية لعرض هذه الصفحة."
@@ -942,3 +941,442 @@ export default function DeliveryPage() {
     </div>
   );
 }
+
+function ClientDeliveryPanel({
+  companies,
+  loading,
+  dir,
+}: {
+  companies: DeliveryCompany[];
+  loading: boolean;
+  dir: string;
+}) {
+  const [connections, setConnections] = useState<ClientConnection[]>([]);
+  const [selected, setSelected] = useState<DeliveryCompany | null>(null);
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const loadConnections = useCallback(async () => {
+    try {
+      const res = await fetch("/api/client-delivery-connections", {
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setConnections(data.items || []);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    loadConnections();
+  }, [loadConnections]);
+
+  const getConnection = (companyId: string) =>
+    connections.find((item) => item.deliveryCompanyId === companyId);
+
+  const credentialFields = (company: DeliveryCompany) => {
+    if (!company.hasApi) return [];
+
+    const authType = company.config?.authType || "bearer";
+    const isSift =
+      company.slug === "sift" ||
+      company.slug === "sift-livraison" ||
+      company.config?.authHeader === "Special-Token";
+
+    if (isSift) {
+      return [
+        {
+          key: "special_token",
+          label: "Special-Token",
+          type: "password",
+        },
+      ];
+    }
+
+    if (authType === "basic") {
+      return [
+        { key: "username", label: "Username", type: "text" },
+        { key: "password", label: "Password", type: "password" },
+      ];
+    }
+
+    if (authType === "api_key") {
+      return [
+        {
+          key: "api_key",
+          label: company.config?.apiKeyHeader || "API Key",
+          type: "password",
+        },
+      ];
+    }
+
+    if (authType === "custom") {
+      return [
+        {
+          key: "token",
+          label: company.config?.authHeader || "Token",
+          type: "password",
+        },
+      ];
+    }
+
+    if (authType === "none") return [];
+
+    return [{ key: "token", label: "Bearer Token", type: "password" }];
+  };
+
+  const openConnect = (company: DeliveryCompany) => {
+    setSelected(company);
+    setCredentials({});
+    setMessage("");
+    setError("");
+  };
+
+  const saveConnection = async () => {
+    if (!selected) return;
+
+    const fields = credentialFields(selected);
+    const missing = fields.find((field) => !credentials[field.key]?.trim());
+
+    if (missing) {
+      setError(
+        dir === "rtl"
+          ? `دخل ${missing.label}`
+          : `${missing.label} is required`,
+      );
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/client-delivery-connections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deliveryCompanyId: selected.id,
+          credentials,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || "Save failed");
+      }
+
+      await loadConnections();
+      setMessage(
+        dir === "rtl"
+          ? "تم حفظ معلومات الربط. دابا دير اختبار الاتصال."
+          : "Connection details saved. Now test the connection.",
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : dir === "rtl"
+          ? "تعذر حفظ الربط"
+          : "Could not save connection",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const testConnection = async (companyId: string) => {
+    setTestingId(companyId);
+    setError("");
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/client-delivery-connections/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryCompanyId: companyId }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      await loadConnections();
+
+      if (!res.ok) {
+        setError(
+          data.error ||
+            data.message ||
+            (dir === "rtl" ? "فشل اختبار الاتصال" : "Connection test failed"),
+        );
+        return;
+      }
+
+      setMessage(
+        dir === "rtl"
+          ? "تم الاتصال بشركة التوصيل بنجاح."
+          : "Delivery company connected successfully.",
+      );
+    } catch {
+      setError(
+        dir === "rtl"
+          ? "وقع مشكل أثناء اختبار الاتصال."
+          : "Connection test failed unexpectedly.",
+      );
+    } finally {
+      setTestingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <div className="spinner" />
+      </div>
+    );
+  }
+
+  const activeCompanies = companies.filter((company) => company.isActive);
+
+  return (
+    <div className="mx-auto w-full max-w-[1400px] space-y-6">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <div className="max-w-3xl">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+            CODFlow
+          </div>
+          <h1 className="text-2xl font-bold text-slate-950 sm:text-3xl">
+            {dir === "rtl" ? "شركة التوصيل" : "Delivery Company"}
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
+            {dir === "rtl"
+              ? "اختار شركة التوصيل ديالك، دخل معلومات الربط، ومن بعد جرّب الاتصال. منين تولي Connected غادي نستعمل هاد الربط لإرسال الطلبات المؤكدة لاحقاً."
+              : "Choose your delivery provider, enter your connection details, then test the connection."}
+          </p>
+        </div>
+      </section>
+
+      {message && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
+
+      {activeCompanies.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+          <h3 className="font-bold text-slate-900">
+            {dir === "rtl"
+              ? "ما كايناش شركات توصيل متاحة حالياً"
+              : "No delivery companies available"}
+          </h3>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {activeCompanies.map((company) => {
+            const connection = getConnection(company.id);
+            const status = connection?.connectionStatus || "not_connected";
+            const connected = status === "connected";
+
+            return (
+              <article
+                key={company.id}
+                className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+              >
+                <div className="p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                        <svg
+                          width="23"
+                          height="23"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                        >
+                          <path d="M3 6h13v10H3z" />
+                          <path d="M16 9h3l2 3v4h-5z" />
+                          <circle cx="7" cy="18" r="2" />
+                          <circle cx="18" cy="18" r="2" />
+                        </svg>
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="truncate text-lg font-bold text-slate-950">
+                          {company.name}
+                        </h3>
+                        <p className="mt-1 text-xs text-slate-400">
+                          {company.hasApi ? "API" : "Manual"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        connected
+                          ? "bg-emerald-50 text-emerald-700"
+                          : status === "failed"
+                          ? "bg-red-50 text-red-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {connected
+                        ? "Connected"
+                        : status === "failed"
+                        ? "Failed"
+                        : dir === "rtl"
+                        ? "غير مربوط"
+                        : "Not connected"}
+                    </span>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openConnect(company)}
+                      className="btn btn-primary"
+                    >
+                      {connection
+                        ? dir === "rtl"
+                          ? "تحديث معلومات الربط"
+                          : "Update connection"
+                        : dir === "rtl"
+                        ? "ربط الشركة"
+                        : "Connect"}
+                    </button>
+
+                    {connection && (
+                      <button
+                        type="button"
+                        onClick={() => testConnection(company.id)}
+                        disabled={testingId === company.id}
+                        className="btn btn-secondary"
+                      >
+                        {testingId === company.id
+                          ? dir === "rtl"
+                            ? "جاري الاختبار..."
+                            : "Testing..."
+                          : "Test Connection"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {selected && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">
+                  {selected.name}
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  {dir === "rtl"
+                    ? "دخل معلومات حساب شركة التوصيل ديالك."
+                    : "Enter your delivery account credentials."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-icon btn-secondary"
+                onClick={() => setSelected(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 p-5">
+              {credentialFields(selected).length === 0 ? (
+                <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                  {selected.hasApi
+                    ? dir === "rtl"
+                      ? "هاد الشركة ما كتحتاج حتى معلومة مصادقة إضافية."
+                      : "This provider does not require additional credentials."
+                    : dir === "rtl"
+                    ? "هاد الشركة مهيأة بنظام يدوي وما كتحتاجش API."
+                    : "This provider is configured for manual delivery."}
+                </div>
+              ) : (
+                credentialFields(selected).map((field) => (
+                  <div key={field.key}>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                      {field.label}
+                    </label>
+                    <input
+                      className="input"
+                      type={field.type}
+                      dir="ltr"
+                      autoComplete="off"
+                      value={credentials[field.key] || ""}
+                      onChange={(e) =>
+                        setCredentials((current) => ({
+                          ...current,
+                          [field.key]: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                ))
+              )}
+
+              <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+                {dir === "rtl"
+                  ? "معلومات الربط كتتحفظ مشفرة. ما تشاركش Token ديالك مع أي شخص."
+                  : "Connection credentials are stored encrypted."}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-4">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setSelected(null)}
+                disabled={saving}
+              >
+                {dir === "rtl" ? "إلغاء" : "Cancel"}
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={saveConnection}
+                disabled={saving}
+              >
+                {saving
+                  ? dir === "rtl"
+                    ? "جاري الحفظ..."
+                    : "Saving..."
+                  : dir === "rtl"
+                  ? "حفظ معلومات الربط"
+                  : "Save connection"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
