@@ -29,7 +29,7 @@ export async function seed() {
   }
 
   // Generate strong temporary passwords
-  const adminTempPw = generateTempPassword();
+  const adminTempPw = process.env.ADMIN_INITIAL_PASSWORD || generateTempPassword();
   const emp1TempPw = generateTempPassword();
   const emp2TempPw = generateTempPassword();
   const clientTempPw = generateTempPassword();
