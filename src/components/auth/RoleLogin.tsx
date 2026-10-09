@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ const portalLinks: Array<{
 function MailIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M4 6.5h16v11H4z" />
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" />
       <path d="m5 8 7 5 7-5" />
     </svg>
   );
@@ -59,7 +59,7 @@ function MailIcon() {
 function LockIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="5" y="10" width="14" height="10" rx="2" />
+      <rect x="5" y="10" width="14" height="10" rx="2.5" />
       <path d="M8 10V7a4 4 0 0 1 8 0v3" />
     </svg>
   );
@@ -118,130 +118,146 @@ function ArrowIcon({ rtl }: { rtl: boolean }) {
   );
 }
 
-function LogoMark({ size = 46 }: { size?: number }) {
+function LogoMark({ size = 44 }: { size?: number }) {
   return (
     <div
-      className="grid place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20"
+      className="grid place-items-center rounded-[14px] bg-gradient-to-br from-indigo-500 via-blue-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20"
       style={{ width: size, height: size }}
     >
       <svg viewBox="0 0 32 32" className="h-7 w-7" fill="none">
-        <path d="M16 3 27 9.2v13L16 29 5 22.2v-13L16 3Z" fill="currentColor" opacity=".95" />
+        <path d="M16 3 27 9.2v13L16 29 5 22.2v-13L16 3Z" fill="currentColor" opacity=".96" />
         <path d="m8.5 10.6 7.5 4.1 7.5-4.1M16 14.7V25" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
   );
 }
 
-function ConfirmationIllustration() {
+function HeroVisual({
+  pick,
+}: {
+  pick: (ar: string, fr: string, en: string) => string;
+}) {
   return (
-    <div className="relative mx-auto w-full max-w-[760px]">
-      <div className="absolute -left-20 top-20 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
-      <div className="absolute -right-16 bottom-10 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl" />
+    <div className="relative mx-auto w-full max-w-[620px]">
+      <div className="rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-[0_30px_80px_rgba(49,46,129,.16)] backdrop-blur-xl">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.14em] text-indigo-600">
+              CODFlow Live
+            </p>
+            <h3 className="mt-1 text-lg font-black text-slate-900">
+              {pick("مركز تأكيد الطلبيات", "Centre de confirmation", "Order confirmation center")}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-700">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            {pick("متصل", "En ligne", "Online")}
+          </div>
+        </div>
 
-      <svg
-        viewBox="0 0 760 520"
-        className="relative z-10 w-full drop-shadow-[0_30px_50px_rgba(15,23,42,.22)]"
-        role="img"
-        aria-label="CODFlow order confirmation workspace"
-      >
-        <defs>
-          <linearGradient id="desk" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#0f172a" />
-            <stop offset="100%" stopColor="#1e293b" />
-          </linearGradient>
-          <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#eef4ff" />
-            <stop offset="100%" stopColor="#ffffff" />
-          </linearGradient>
-          <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#111827" />
-            <stop offset="100%" stopColor="#334155" />
-          </linearGradient>
-          <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#4f46e5" />
-            <stop offset="100%" stopColor="#2563eb" />
-          </linearGradient>
-          <filter id="shadow">
-            <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#0f172a" floodOpacity=".22" />
-          </filter>
-        </defs>
+        <div className="mt-4 grid gap-4 md:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-2xl bg-gradient-to-b from-slate-950 to-slate-800 p-4 text-white">
+            <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-slate-700/70">
+              <div className="relative">
+                <div className="h-16 w-16 rounded-full bg-[#d9a97f]" />
+                <div className="absolute -left-4 top-1 h-14 w-3 rounded-full bg-slate-950" />
+                <div className="absolute -right-4 top-1 h-14 w-3 rounded-full bg-slate-950" />
+                <div className="absolute -left-2 -right-2 top-[-6px] h-7 rounded-t-full bg-slate-950" />
+                <div className="absolute -right-9 top-9 h-1.5 w-8 rounded-full bg-slate-950" />
+                <div className="absolute -right-10 top-[33px] h-3 w-3 rounded-full bg-slate-950" />
+              </div>
+            </div>
 
-        <rect x="35" y="400" width="690" height="65" rx="24" fill="url(#desk)" opacity=".98" />
+            <div className="mt-4 text-center">
+              <div className="text-sm font-extrabold">
+                {pick("موظف التأكيد", "Agent de confirmation", "Confirmation agent")}
+              </div>
+              <div className="mt-1 text-[11px] text-slate-300">
+                {pick("يتابع الطلبات لحظة بلحظة", "Suivi des commandes en temps réel", "Real-time order follow-up")}
+              </div>
+            </div>
 
-        <rect x="350" y="130" width="340" height="245" rx="24" fill="#0f172a" filter="url(#shadow)" />
-        <rect x="366" y="146" width="308" height="212" rx="16" fill="url(#screen)" />
+            <div className="mt-4 rounded-xl bg-white/10 px-3 py-2.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-300">
+                  {pick("طلبات اليوم", "Commandes aujourd’hui", "Orders today")}
+                </span>
+                <span className="font-black">128</span>
+              </div>
+              <div className="mt-2 h-1.5 rounded-full bg-white/10">
+                <div className="h-1.5 w-[78%] rounded-full bg-gradient-to-r from-indigo-400 to-blue-400" />
+              </div>
+            </div>
+          </div>
 
-        <rect x="390" y="170" width="130" height="18" rx="9" fill="#dbe7ff" />
-        <rect x="533" y="170" width="110" height="18" rx="9" fill="#eef2ff" />
+          <div className="rounded-2xl border border-slate-200 bg-white p-3.5">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="text-sm font-black text-slate-900">
+                {pick("الطلبات الجديدة", "Nouvelles commandes", "New orders")}
+              </div>
+              <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-700">
+                Live
+              </span>
+            </div>
 
-        <text x="390" y="220" fontSize="18" fontWeight="800" fill="#0f172a">New Orders</text>
-        <text x="612" y="220" fontSize="12" textAnchor="end" fill="#64748b">Live queue</text>
+            <div className="space-y-2">
+              {[
+                ["Ahmed", "0612 34 56 78", "Sneakers"],
+                ["Sara", "0701 23 45 67", "Sac"],
+                ["Youssef", "0666 78 90 12", "Montre"],
+                ["Fatima", "0688 11 22 33", "Veste"],
+              ].map(([name, phone, product]) => (
+                <div
+                  key={phone}
+                  className="grid grid-cols-[32px_1fr_auto] items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/80 px-2.5 py-2"
+                >
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-100 text-[11px] font-black text-indigo-700">
+                    {name[0]}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-[11px] font-extrabold text-slate-800">
+                      {name} · {product}
+                    </div>
+                    <div className="text-[10px] text-slate-500">{phone}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="rounded-lg bg-emerald-500 px-2.5 py-1.5 text-[10px] font-extrabold text-white"
+                  >
+                    {pick("تأكيد", "Confirmer", "Confirm")}
+                  </button>
+                </div>
+              ))}
+            </div>
 
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {[
+                ["92", pick("مؤكدة", "Confirmées", "Confirmed")],
+                ["18", pick("اتصال لاحق", "Rappel", "Callback")],
+                ["18", pick("قيد المعالجة", "En cours", "Processing")],
+              ].map(([value, label]) => (
+                <div key={label} className="rounded-xl bg-slate-50 px-2 py-2.5 text-center">
+                  <div className="text-sm font-black text-slate-900">{value}</div>
+                  <div className="mt-0.5 text-[9px] text-slate-500">{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-3">
         {[
-          ["Ahmed", "0612 34 56 78", "#22c55e"],
-          ["Sara", "0701 23 45 67", "#22c55e"],
-          ["Youssef", "0666 78 90 12", "#22c55e"],
-          ["Fatima", "0688 11 22 33", "#22c55e"],
-        ].map((row, i) => {
-          const y = 245 + i * 31;
-          return (
-            <g key={row[0]}>
-              <rect x="388" y={y - 18} width="264" height="26" rx="8" fill={i % 2 ? "#f8fafc" : "#ffffff"} />
-              <circle cx="405" cy={y - 5} r="8" fill="#e0e7ff" />
-              <text x="420" y={y} fontSize="11" fontWeight="700" fill="#334155">{row[0]}</text>
-              <text x="485" y={y} fontSize="10" fill="#64748b">{row[1]}</text>
-              <rect x="592" y={y - 15} width="48" height="20" rx="7" fill={row[2]} />
-              <text x="616" y={y - 1} fontSize="9" textAnchor="middle" fontWeight="800" fill="#fff">Confirm</text>
-            </g>
-          );
-        })}
-
-        <rect x="480" y="375" width="90" height="16" rx="8" fill="#475569" />
-        <rect x="508" y="389" width="34" height="38" rx="8" fill="#334155" />
-
-        <ellipse cx="245" cy="420" rx="120" ry="38" fill="#0b1220" opacity=".28" />
-        <path d="M135 430c10-88 36-128 97-144 70 11 104 58 115 144H135Z" fill="url(#shirt)" />
-        <ellipse cx="232" cy="230" rx="58" ry="66" fill="#d7a77a" />
-        <path d="M175 225c2-54 26-82 64-82 29 0 51 15 59 44-21-8-47-10-75-4-17 4-33 17-48 42Z" fill="#171717" />
-        <path d="M182 210c-13 3-18 17-16 31 3 16 12 24 22 22" fill="none" stroke="#111827" strokeWidth="10" strokeLinecap="round" />
-        <path d="M291 210c15 2 21 14 20 28-1 14-9 23-20 24" fill="none" stroke="#111827" strokeWidth="10" strokeLinecap="round" />
-        <path d="M179 204c10-35 34-51 59-51 33 0 57 18 65 52" fill="none" stroke="#111827" strokeWidth="11" strokeLinecap="round" />
-        <path d="M289 245c15 4 24 11 31 25" fill="none" stroke="#111827" strokeWidth="6" strokeLinecap="round" />
-        <circle cx="323" cy="273" r="6" fill="#111827" />
-
-        <rect x="180" y="334" width="120" height="38" rx="10" fill="#0f172a" opacity=".96" />
-        <text x="240" y="357" textAnchor="middle" fontSize="16" fontWeight="900" fill="#fff">COD</text>
-        <text x="276" y="357" textAnchor="middle" fontSize="16" fontWeight="900" fill="#60a5fa">Flow</text>
-
-        <g transform="translate(70 120)">
-          <rect width="220" height="92" rx="20" fill="#fff" opacity=".96" filter="url(#shadow)" />
-          <circle cx="44" cy="46" r="22" fill="#dcfce7" />
-          <path d="m34 46 7 7 13-16" fill="none" stroke="#16a34a" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-          <text x="78" y="38" fontSize="13" fontWeight="800" fill="#0f172a">Order confirmed</text>
-          <text x="78" y="58" fontSize="11" fill="#64748b">Customer accepted the order</text>
-        </g>
-
-        <g transform="translate(65 255)">
-          <rect width="230" height="90" rx="20" fill="#fff" opacity=".96" filter="url(#shadow)" />
-          <rect x="25" y="24" width="44" height="44" rx="12" fill="url(#blue)" />
-          <path d="M36 45h22M47 34v22" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" />
-          <text x="84" y="38" fontSize="13" fontWeight="800" fill="#0f172a">Confirmation service</text>
-          <text x="84" y="58" fontSize="11" fill="#64748b">Fast • Organized • Real-time</text>
-        </g>
-      </svg>
-
-      <div className="relative z-20 -mt-6 grid grid-cols-3 gap-3 px-3">
-        {[
-          ["10K+", "طلبات تمت معالجتها"],
-          ["500+", "عملاء نشطين"],
-          ["99%", "جودة المتابعة"],
+          ["10K+", pick("طلبات معالجة", "Commandes traitées", "Orders processed")],
+          ["500+", pick("عملاء نشطين", "Clients actifs", "Active clients")],
+          ["99%", pick("جودة المتابعة", "Qualité de suivi", "Follow-up quality")],
         ].map(([value, label]) => (
           <div
             key={label}
-            className="rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-4 text-center text-white shadow-xl backdrop-blur"
+            className="rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-3 text-center shadow-sm backdrop-blur"
           >
-            <div className="text-xl font-black">{value}</div>
-            <div className="mt-1 text-[11px] text-slate-300">{label}</div>
+            <div className="text-lg font-black text-slate-950">{value}</div>
+            <div className="mt-1 text-[10px] font-medium text-slate-500">{label}</div>
           </div>
         ))}
       </div>
@@ -362,24 +378,26 @@ export default function RoleLogin({ role }: { role: Role }) {
   return (
     <main
       dir={dir}
-      className="min-h-screen overflow-hidden bg-[#f5f8ff] text-slate-900 lg:grid lg:grid-cols-[1.08fr_.92fr]"
+      className="min-h-screen bg-[#f4f7fc] text-slate-900 lg:grid lg:grid-cols-[minmax(0,1.02fr)_minmax(460px,.98fr)]"
     >
-      <section className="relative hidden min-h-screen overflow-hidden bg-[radial-gradient(circle_at_15%_15%,rgba(96,165,250,.35),transparent_30%),radial-gradient(circle_at_80%_80%,rgba(99,102,241,.3),transparent_28%),linear-gradient(145deg,#f8fbff_0%,#e8f1ff_45%,#dfe9ff_100%)] lg:flex lg:flex-col lg:justify-between">
-        <div className="relative z-10 px-10 pt-9 xl:px-14 xl:pt-11">
-          <div className="flex items-center justify-between gap-6">
+      <section className="relative hidden min-h-screen overflow-hidden bg-[radial-gradient(circle_at_12%_18%,rgba(96,165,250,.34),transparent_26%),radial-gradient(circle_at_86%_80%,rgba(124,58,237,.20),transparent_26%),linear-gradient(145deg,#f8fbff_0%,#edf4ff_48%,#e8edff_100%)] lg:flex lg:items-center lg:justify-center">
+        <div className="absolute inset-0 opacity-[.28] [background-image:linear-gradient(rgba(99,102,241,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,.08)_1px,transparent_1px)] [background-size:32px_32px]" />
+
+        <div className="relative z-10 w-full max-w-[760px] px-8 py-8 xl:px-12">
+          <div className="mb-7 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <LogoMark size={52} />
+              <LogoMark size={48} />
               <div>
-                <div className="text-[32px] font-black tracking-tight text-slate-950">
+                <div className="text-[28px] font-black tracking-tight text-slate-950">
                   COD<span className="text-indigo-600">Flow</span>
                 </div>
-                <div className="text-xs font-semibold tracking-[.16em] text-slate-500">
+                <div className="text-[10px] font-bold tracking-[.18em] text-slate-500">
                   ORDER CONFIRMATION
                 </div>
               </div>
             </div>
 
-            <div className="rounded-full border border-blue-200/70 bg-white/80 px-4 py-2 text-xs font-bold text-blue-700 shadow-sm backdrop-blur">
+            <div className="rounded-full border border-indigo-100 bg-white/80 px-3.5 py-2 text-[11px] font-bold text-indigo-700 shadow-sm backdrop-blur">
               {pick(
                 "منصة احترافية لتسيير وتأكيد الطلبيات",
                 "Plateforme professionnelle de confirmation COD",
@@ -388,35 +406,33 @@ export default function RoleLogin({ role }: { role: Role }) {
             </div>
           </div>
 
-          <div className="mt-9 max-w-[650px]">
-            <h2 className="text-[42px] font-black leading-[1.08] tracking-tight text-slate-950 xl:text-[50px]">
+          <div className="mb-6 max-w-[620px]">
+            <h2 className="text-[32px] font-black leading-[1.15] tracking-tight text-slate-950 xl:text-[38px]">
               {pick(
                 "أكد الطلبيات ونمّي عملك",
                 "Confirmez vos commandes et développez votre activité",
                 "Confirm orders and grow your business"
               )}
             </h2>
-            <p className="mt-4 max-w-[560px] text-[15px] leading-7 text-slate-600">
+            <p className="mt-3 max-w-[590px] text-[14px] leading-6 text-slate-600">
               {pick(
-                "منصة متكاملة لإدارة الطلبيات، الموظفين، العملاء وتتبع عملية التأكيد في مكان واحد.",
+                "منصة متكاملة لإدارة الطلبيات، الموظفين والعملاء وتتبع عملية التأكيد من مكان واحد.",
                 "Une plateforme complète pour gérer les commandes, les employés, les clients et le suivi de confirmation.",
                 "A complete platform to manage orders, employees, clients and confirmation workflows in one place."
               )}
             </p>
           </div>
-        </div>
 
-        <div className="relative z-10 flex-1 px-7 pb-8 pt-2 xl:px-10">
-          <ConfirmationIllustration />
+          <HeroVisual pick={pick} />
         </div>
       </section>
 
-      <section className="relative flex min-h-screen items-center justify-center px-4 py-7 sm:px-8 lg:px-10 xl:px-16">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,.11),_transparent_34%),radial-gradient(circle_at_bottom_left,_rgba(59,130,246,.08),_transparent_32%)]" />
+      <section className="relative flex min-h-screen items-center justify-center px-5 py-8 sm:px-8 lg:px-10 xl:px-14">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,.08),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,.07),transparent_28%)]" />
 
-        <div className="w-full max-w-[590px] rounded-[30px] border border-white/80 bg-white/95 p-5 shadow-[0_30px_80px_rgba(15,23,42,.12)] backdrop-blur sm:p-8 xl:p-10">
+        <div className="w-full max-w-[470px] rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,.10)] sm:p-8">
           <div className="mb-7 flex items-center gap-3 lg:hidden">
-            <LogoMark size={46} />
+            <LogoMark size={44} />
             <div>
               <div className="text-2xl font-black tracking-tight text-slate-950">
                 COD<span className="text-indigo-600">Flow</span>
@@ -431,24 +447,24 @@ export default function RoleLogin({ role }: { role: Role }) {
             </div>
           </div>
 
-          <div className="mb-7 text-center">
-            <div className="mx-auto mb-5 hidden items-center justify-center gap-3 lg:flex">
-              <LogoMark size={48} />
-              <div className="text-[30px] font-black tracking-tight text-slate-950">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 hidden items-center justify-center gap-3 lg:flex">
+              <LogoMark size={46} />
+              <div className="text-[28px] font-black tracking-tight text-slate-950">
                 COD<span className="text-indigo-600">Flow</span>
               </div>
             </div>
 
-            <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-[30px]">
+            <h1 className="text-[26px] font-black tracking-tight text-slate-950">
               {pick(meta.arTitle, meta.frTitle, meta.enTitle)}
             </h1>
 
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <p className="mt-1.5 text-sm leading-6 text-slate-500">
               {pick(meta.arSubtitle, meta.frSubtitle, meta.enSubtitle)}
             </p>
           </div>
 
-          <div className="mb-7 grid grid-cols-3 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-1.5">
+          <div className="mb-6 grid grid-cols-3 rounded-2xl border border-slate-200 bg-slate-50 p-1">
             {portalLinks.map((item) => {
               const active = item.role === role;
 
@@ -456,9 +472,9 @@ export default function RoleLogin({ role }: { role: Role }) {
                 <Link
                   key={item.role}
                   href={item.href}
-                  className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-2 text-[13px] font-bold transition ${
+                  className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl px-2 text-[12px] font-bold transition ${
                     active
-                      ? "bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow-md shadow-indigo-200"
+                      ? "bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow-sm"
                       : "text-slate-600 hover:bg-white hover:text-slate-900"
                   }`}
                 >
@@ -470,14 +486,14 @@ export default function RoleLogin({ role }: { role: Role }) {
           </div>
 
           {error && (
-            <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3.5 text-sm font-medium text-red-700">
+            <div className="mb-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-bold text-slate-800">
+              <label className="mb-1.5 block text-sm font-bold text-slate-800">
                 {t("auth.email")}
               </label>
 
@@ -490,7 +506,7 @@ export default function RoleLogin({ role }: { role: Role }) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-[58px] w-full rounded-2xl border border-slate-200 bg-white px-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                  className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
                   placeholder={pick(
                     "أدخل بريدك الإلكتروني",
                     "Entrez votre e-mail",
@@ -504,7 +520,7 @@ export default function RoleLogin({ role }: { role: Role }) {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-bold text-slate-800">
+              <label className="mb-1.5 block text-sm font-bold text-slate-800">
                 {t("auth.password")}
               </label>
 
@@ -517,7 +533,7 @@ export default function RoleLogin({ role }: { role: Role }) {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-[58px] w-full rounded-2xl border border-slate-200 bg-white px-12 pe-14 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+                  className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-12 pe-14 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
                   placeholder={pick(
                     "أدخل كلمة المرور",
                     "Entrez votre mot de passe",
@@ -541,21 +557,21 @@ export default function RoleLogin({ role }: { role: Role }) {
             </div>
 
             <div className="flex items-center justify-between gap-4">
-              <label className="flex cursor-pointer items-center gap-2.5">
+              <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
                   className="h-4 w-4 rounded border-slate-300 accent-indigo-600"
                 />
-                <span className="text-[13px] font-medium text-slate-600">
+                <span className="text-[12px] font-medium text-slate-600">
                   {pick("تذكرني", "Se souvenir de moi", "Remember me")}
                 </span>
               </label>
 
               <Link
                 href="/forgot-password"
-                className="text-[13px] font-bold text-indigo-600 transition hover:text-indigo-700 hover:underline"
+                className="text-[12px] font-bold text-indigo-600 hover:underline"
               >
                 {t("auth.forgotPassword")}
               </Link>
@@ -564,7 +580,7 @@ export default function RoleLogin({ role }: { role: Role }) {
             <button
               type="submit"
               disabled={loading}
-              className="flex h-[58px] w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-500 px-5 text-sm font-extrabold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+              className="flex h-[52px] w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-500 px-5 text-sm font-extrabold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             >
               <span>
                 {loading
@@ -576,7 +592,7 @@ export default function RoleLogin({ role }: { role: Role }) {
           </form>
 
           {role === "client" && (
-            <div className="mt-7 text-center">
+            <div className="mt-6 text-center">
               <p className="text-sm text-slate-500">
                 {pick(
                   "ليس لديك حساب؟",
@@ -597,12 +613,12 @@ export default function RoleLogin({ role }: { role: Role }) {
             </div>
           )}
 
-          <div className="mt-8 border-t border-slate-100 pt-6">
-            <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-4 text-center">
-              <p className="text-sm font-bold text-slate-800">
+          <div className="mt-6 border-t border-slate-100 pt-5">
+            <div className="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-center">
+              <p className="text-[13px] font-bold text-slate-800">
                 {pick("تحتاج مساعدة؟", "Besoin d’aide ?", "Need help?")}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-0.5 text-[11px] text-slate-500">
                 {pick(
                   "تواصل مع مسؤول النظام",
                   "Contactez l’administrateur du système",
@@ -616,4 +632,5 @@ export default function RoleLogin({ role }: { role: Role }) {
     </main>
   );
 }
+
 
