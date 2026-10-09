@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { formatDate } from "@/lib/utils";
+import GoogleSheetsConnectCard from "@/components/GoogleSheetsConnectCard";
 
 type Store = {
   id: string;
@@ -349,6 +350,9 @@ export default function StoresPage() {
           </div>
         </div>
       </section>
+
+
+      {isClient && <GoogleSheetsConnectCard />}
 
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
